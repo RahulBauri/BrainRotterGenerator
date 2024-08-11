@@ -15,11 +15,12 @@ export const processSingleVideo = async (req, res) => {
     `output_video_${Date.now()}.mp4`
   );
 
-  const captionsPath = path.format({
-    dir: path.dirname(inputVideoPath),
-    name: path.parse(inputVideoPath).name,
-    ext: '.srt',
-  });
+  const captionsPath =
+    'captions/' +
+    path.format({
+      name: path.parse(inputVideoPath).name,
+      ext: '.srt',
+    });
 
   const includeMusic = req.query.includeMusic === 'true'; // Check if music should be included
 

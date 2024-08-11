@@ -1,3 +1,4 @@
+import path from 'path';
 import { execFile } from 'child_process';
 
 export const processVideo = async (
@@ -6,56 +7,59 @@ export const processVideo = async (
   outputPath,
   captionsPath
 ) => {
-  return new Promise((resolve, reject) => {
-    const ffmpegPath =
-      'C:\\Users\\kumar\\Downloads\\ffmpeg\\ffmpeg-master-latest-win64-gpl\\bin\\ffmpeg.exe';
+  // Resolve paths
+  const resolvedInputPath1 = path.resolve(inputPath1);
+  const resolvedInputPath2 = path.resolve(inputPath2);
+  const resolvedOutputPath = path.resolve(outputPath);
 
-    // Escape backslashes and single quotes
-    const escapedCaptionsPath = captionsPath
-      .replace(/\\/g, '\\\\')
-      .replace(/'/g, "\\'");
+  console.log('Resolved input video path:', resolvedInputPath1);
+  console.log('Resolved lower video path:', resolvedInputPath2);
+  console.log('Resolved output video path:', resolvedOutputPath);
+  console.log('captions path:', captionsPath);
 
-    const complexFilter = `
-      [0:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[upper];
-      [upper]subtitles=${escapedCaptionsPath}:force_style='Fontsize=24,Fontcolor=white,Box=1,Boxcolor=black@0.5,Boxborderw=5'[upper_subtitled];
-      [1:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[lower];
-      [upper_subtitled][lower]vstack=inputs=2[stacked];
-      [0:a]volume=1.0[upperaudio];
-      [upperaudio]anull[audio]`;
+  const ffmpegPath =
+    'C:\\Users\\kumar\\Downloads\\ffmpeg\\ffmpeg-master-latest-win64-gpl\\bin\\ffmpeg.exe';
 
-    const args = [
-      '-i',
-      inputPath1,
-      '-i',
-      inputPath2,
-      '-filter_complex',
-      complexFilter.replace(/\n/g, ''),
-      '-map',
-      '[stacked]',
-      '-map',
-      '[audio]',
-      '-c:v',
-      'libx264',
-      '-c:a',
-      'aac',
-      '-b:v',
-      '4M',
-      '-b:a',
-      '192k',
-      '-preset',
-      'medium',
-      '-movflags',
-      '+faststart',
-      outputPath,
-    ];
+  const complexFilter =
+    `[0:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[upper],` +
+    `[1:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[lower],` +
+    `[upper][lower]vstack=inputs=2[stacked],` +
+    `[stacked]subtitles=${captionsPath}:force_style='Alignment=6'[stacked_with_subtitles],` +
+    `[0:a]volume=1.0[upperaudio],` +
+    `[upperaudio]anull[audio]`;
 
-    execFile(ffmpegPath, args, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error during video processing: ${stderr}`);
-        return reject(error);
-      }
-      console.log(`Video processed successfully: ${stdout}`);
-      resolve(outputPath);
-    });
+  const args = [
+    '-i',
+    resolvedInputPath1,
+    '-i',
+    resolvedInputPath2,
+    '-filter_complex',
+    complexFilter,
+    '-map',
+    '[stacked_with_subtitles]',
+    '-map',
+    '[audio]',
+    '-c:v',
+    'libx264', // Use H.264 codec for video
+    '-c:a',
+    'aac', // Use AAC codec for audio
+    '-b:v',
+    '4M', // Video bitrate (4 Mbps)
+    '-b:a',
+    '192k', // Audio bitrate (192 kbps)
+    '-preset',
+    'medium', // Encoding speed vs. compression
+    '-movflags',
+    '+faststart', // Optimize for streaming
+    resolvedOutputPath,
+  ];
+
+  execFile(ffmpegPath, args, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`execFile error: ${error}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    console.error(`stderr: ${stderr}`);
   });
 };
