@@ -15,20 +15,26 @@ export const processSingleVideo = async (req, res) => {
     `output_video_${Date.now()}.mp4`
   );
 
-  const captionsPath = 'uploads/captions.srt'; // Path where the captions file will be saved
+  const captionsPath = path.format({
+    dir: path.dirname(inputVideoPath),
+    name: path.parse(inputVideoPath).name,
+    ext: '.srt',
+  });
+
   const includeMusic = req.query.includeMusic === 'true'; // Check if music should be included
 
   console.log('input video path:', inputVideoPath);
   console.log('lower video path:', lowerVideoPath);
   console.log('output video path:', outputVideoPath);
+  console.log('captions path:', captionsPath);
 
   try {
-    // const captions = await extractCaptions(inputVideoPath, captionsPath);
+    const captions = await extractCaptions(inputVideoPath, captionsPath);
     const outputVid = await processVideo(
       inputVideoPath,
       lowerVideoPath,
-      // captionsPath,
-      outputVideoPath
+      outputVideoPath,
+      captionsPath
       // includeMusic
     );
     console.log('we get outputVid');

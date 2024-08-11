@@ -1,9 +1,14 @@
 import { exec } from 'child_process'; // for running external commands
+import path from 'path';
 
 export const generateCaptionsFromAudio = async (inputPath, captionsPath) => {
   return new Promise((resolve, reject) => {
-    // Use autosub or a similar tool to generate captions from the audio track
-    const command = `autosub ${inputPath} -o ${captionsPath}`;
+    // Define the Python command to run whisper
+    const resolvedInputPath = path.resolve(inputPath);
+    const resolvedCaptionsPath = path.resolve(captionsPath);
+    const command = `python -m whisper ${resolvedInputPath} --output_format srt --output_dir ${path.dirname(
+      resolvedCaptionsPath
+    )} --model tiny`;
 
     exec(command, (error, stdout, stderr) => {
       if (error) {
