@@ -1,5 +1,7 @@
 import path from 'path';
 import { execFile } from 'child_process';
+import shell from 'shelljs'
+
 
 // Function to generate the adjusted captions path
 const getAdjustedCaptionsPath = (captionsPath) => {
@@ -31,10 +33,11 @@ const runPythonScript = (scriptPath, inputSrtPath, outputSrtPath) => {
 export const processVideo = async (
   inputPath1,
   inputPath2,
-  outputPath,
+  outputPath,captionsPath) => {
+  return new Promise((resolve,reject,
   captionsPath
 ) => {
-  // Resolve paths
+    // Resolve paths
   const resolvedInputPath1 = path.resolve(inputPath1);
   const resolvedInputPath2 = path.resolve(inputPath2);
   const resolvedOutputPath = path.resolve(outputPath);
@@ -53,8 +56,7 @@ export const processVideo = async (
     await runPythonScript(scriptPath, captionsPath, adjustedCaptionsPath);
     console.log('Adjusted SRT file created successfully.');
 
-    const ffmpegPath =
-      'C:\\Users\\kumar\\Downloads\\ffmpeg\\ffmpeg-master-latest-win64-gpl\\bin\\ffmpeg.exe';
+  let ffmpegPath = shell.which('ffmpeg').toString();
 
     const complexFilter =
       `[0:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[upper],` +
@@ -101,4 +103,4 @@ export const processVideo = async (
   } catch (error) {
     console.error('Error processing video:', error);
   }
-};
+})};
