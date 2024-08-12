@@ -11,7 +11,8 @@ export const processSingleVideo = async (req, res) => {
     await getRandomFile('brainRottingVideos', '.mp4')
   );
   const outputVideoPath = path.join(
-    'D:\\My_Projects\\BrainRotterGenerator\\backend\\outputs',
+    path.resolve(),
+    'outputs',
     `output_video_${Date.now()}.mp4`
   );
 
