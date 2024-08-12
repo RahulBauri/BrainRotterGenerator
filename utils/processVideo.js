@@ -5,10 +5,12 @@ import shell from 'shelljs'
 
 // Function to generate the adjusted captions path
 const getAdjustedCaptionsPath = (captionsPath) => {
+  console.log(captionsPath)
   const dirname = path.dirname(captionsPath);
   const basename = path.basename(captionsPath, path.extname(captionsPath));
   const extension = path.extname(captionsPath);
   const adjustedPath = path.join(dirname, `${basename}_adjusted${extension}`);
+  console.log(adjustedPath)
   return adjustedPath.replace(/\\/g, '/'); // Replace backslashes with forward slashes
 };
 
@@ -33,9 +35,9 @@ const runPythonScript = (scriptPath, inputSrtPath, outputSrtPath) => {
 export const processVideo = async (
   inputPath1,
   inputPath2,
-  outputPath) => {
-  return new Promise(async (resolve,reject,
-  captionsPath
+  outputPath,
+  captionsPath) => {
+  return new Promise(async (resolve,reject
 ) => {
     // Resolve paths
   const resolvedInputPath1 = path.resolve(inputPath1);
