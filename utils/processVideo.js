@@ -60,7 +60,7 @@ export const processVideo = async (
       `[0:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[upper],` +
       `[1:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[lower],` +
       `[upper][lower]vstack=inputs=2[stacked],` +
-      `[stacked]subtitles=${adjustedCaptionsPath}:force_style='Alignment=6,MarginV=120'[stacked_with_subtitles],` +
+      `[stacked]subtitles=${adjustedCaptionsPath}:force_style='Alignment=6,MarginV=120,Fontsize=24,PrimaryColour=&H00FFFF00&,OutlineColour=&H00000000&,Outline=1,Shadow=1'[stacked_with_subtitles],` +
       `[0:a]volume=1.0[upperaudio],` +
       `[upperaudio]anull[audio]`;
 
