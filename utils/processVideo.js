@@ -33,8 +33,8 @@ const runPythonScript = (scriptPath, inputSrtPath, outputSrtPath) => {
 export const processVideo = async (
   inputPath1,
   inputPath2,
-  outputPath,captionsPath) => {
-  return new Promise((resolve,reject,
+  outputPath) => {
+  return new Promise(async (resolve,reject,
   captionsPath
 ) => {
     // Resolve paths
