@@ -21,7 +21,9 @@ const fileFilter = (req, file, cb) => {
   );
   const mimetype = allowedTypes.test(file.mimetype);
 
-  if (extname && mimetype) {
+  console.log(file.originalname, file.mimetype)
+
+  if (mimetype) {
     return cb(null, true);
   } else {
     cb(new Error('Only MP4 files are allowed'), false);
