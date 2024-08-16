@@ -1,11 +1,12 @@
 import multer from 'multer';
 import path from 'path';
+import { EXTERNAL_STORAGE_PATHS } from '../config.js';
 
 // Define storage options
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     // Specify the directory where files will be uploaded
-    cb(null, 'uploads/'); // Change 'uploads/' to your preferred directory
+    cb(null, EXTERNAL_STORAGE_PATHS.uploads); // Use the external uploads directory
   },
   filename: function (req, file, cb) {
     // Specify the file name
@@ -21,7 +22,9 @@ const fileFilter = (req, file, cb) => {
   );
   const mimetype = allowedTypes.test(file.mimetype);
 
-  if (extname && mimetype) {
+  console.log(file.originalname, file.mimetype);
+
+  if (mimetype) {
     return cb(null, true);
   } else {
     cb(new Error('Only MP4 files are allowed'), false);
