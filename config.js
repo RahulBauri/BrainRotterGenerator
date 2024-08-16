@@ -1,12 +1,6 @@
 import path from 'path';
 import dotenv from 'dotenv';
 
-// export const EXTERNAL_STORAGE_PATH = path.resolve(
-//   __dirname,
-//   '../../../external_storage'
-// );
-
-// Load environment variables from .env file
 dotenv.config();
 
 const EXTERNAL_STORAGE_BASE_PATH = path.resolve(
