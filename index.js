@@ -6,6 +6,7 @@ import videoRouter from './routes/videoRoutes.js';
 const app = express();
 
 app.use(cors());
+app.use(express.json());
 
 app.get('/test', (req, res) => {
   res.send('Hello world');

@@ -6,8 +6,8 @@ export const generateCaptionsFromAudio = async (inputPath, captionsPath) => {
     // Define the Python command to run whisper
     const resolvedInputPath = path.resolve(inputPath);
     const resolvedCaptionsPath = path.resolve(captionsPath);
-    console.log(captionsPath)
-    console.log(resolvedCaptionsPath)
+    console.log(captionsPath);
+    console.log(resolvedCaptionsPath);
     process.env.PYTHONIOENCODING = 'UTF-8';
     const command = `python -m whisper ${resolvedInputPath} --output_format srt --output_dir ${path.dirname(
       resolvedCaptionsPath

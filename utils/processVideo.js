@@ -2,6 +2,22 @@ import path from 'path';
 import { execFile } from 'child_process';
 import shell from 'shelljs';
 import ffmpeg from 'fluent-ffmpeg';
+import srtParser2 from 'srt-parser-2';
+import fs from 'fs';
+
+// Function to parse SRT file and generate drawtext commands
+const generateDrawtextCommands = (srtFilePath) => {
+  const parser = new srtParser2();
+  const srtContent = fs.readFileSync(srtFilePath, 'utf8');
+  const subtitles = parser.fromSrt(srtContent);
+  const drawtextCommands = subtitles.map((subtitle) => {
+    const startTime = subtitle.startTime.replace(',', '.');
+    const endTime = subtitle.endTime.replace(',', '.');
+    const text = subtitle.text.replace(/\r?\n|\r/g, ' '); // Replace newlines with space
+    return `drawtext=text='${text}':enable='between(t,${startTime},${endTime})':x=(w-text_w)/2:y=h-(text_h*2):fontcolor=white:fontsize=24:shadowx=2:shadowy=2:shadowcolor=black:borderw=2`;
+  });
+  return drawtextCommands.join(',');
+};
 
 // Function to generate the adjusted captions path
 const getAdjustedCaptionsPath = (captionsPath) => {
@@ -10,6 +26,17 @@ const getAdjustedCaptionsPath = (captionsPath) => {
   const basename = path.basename(captionsPath, path.extname(captionsPath));
   const extension = path.extname(captionsPath);
   const adjustedPath = path.join(dirname, `${basename}_adjusted${extension}`);
+  console.log(adjustedPath);
+  return adjustedPath.replace(/\\/g, '/'); // Replace backslashes with forward slashes
+};
+
+// Function to generate the adjusted captions path for formatted srt file
+const getAdjustedCaptionsPath2 = (captionsPath) => {
+  console.log(captionsPath);
+  const dirname = path.dirname(captionsPath);
+  const basename = path.basename(captionsPath, path.extname(captionsPath));
+  const extension = path.extname(captionsPath);
+  const adjustedPath = path.join(dirname, `${basename}_formatted${extension}`);
   console.log(adjustedPath);
   return adjustedPath.replace(/\\/g, '/'); // Replace backslashes with forward slashes
 };
@@ -60,6 +87,10 @@ export const processVideo = async (
     const adjustedCaptionsPath = getAdjustedCaptionsPath(captionsPath);
     const scriptPath = 'utils/adjust_srt.py';
 
+    const formattedCaptionsPath =
+      getAdjustedCaptionsPath2(adjustedCaptionsPath);
+    const srtFormatterScriptPath = 'utils/srt_formatter.py';
+
     const upperVideoDuration = await getVideoDuration(resolvedInputPath1);
     const lowerVideoDuration = await getVideoDuration(resolvedInputPath2);
 
@@ -69,6 +100,7 @@ export const processVideo = async (
     console.log('captions path:', captionsPath);
     console.log('script path:', scriptPath);
     console.log('adjusted captions path:', adjustedCaptionsPath);
+    console.log('adjusted formatted captions path:', formattedCaptionsPath);
     console.log('upper video duration:', upperVideoDuration);
     console.log('lower video duration:', lowerVideoDuration);
 
@@ -76,15 +108,45 @@ export const processVideo = async (
       await runPythonScript(scriptPath, captionsPath, adjustedCaptionsPath);
       console.log('Adjusted SRT file created successfully.');
 
+      // await runPythonScript(
+      //   srtFormatterScriptPath,
+      //   adjustedCaptionsPath,
+      //   formattedCaptionsPath
+      // );
+      // console.log('SRT file formatted successfully.');
+
+      // const drawtextCommands = generateDrawtextCommands(formattedCaptionsPath);
+      // console.log(
+      //   'drawText commands generated successfully : ',
+      //   drawtextCommands
+      // );
+
       let ffmpegPath = shell.which('ffmpeg').toString();
+
+      // Calculate how many times lower video should be repeated
+      let repeatCount = 1;
+      if (lowerVideoDuration < upperVideoDuration) {
+        repeatCount = Math.ceil(upperVideoDuration / lowerVideoDuration);
+      }
 
       const complexFilter =
         `[0:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[upper],` +
-        `[1:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[lower],` +
-        `[upper][lower]vstack=inputs=2[stacked],` +
-        `[stacked]subtitles=${adjustedCaptionsPath}:force_style='Alignment=6,MarginV=120,Fontsize=24,PrimaryColour=&H00FFFF00&,OutlineColour=&H00000000&,Outline=1,Shadow=1'[stacked_with_subtitles],` +
+        `[1:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[lower];` +
+        `[lower]loop=${repeatCount}:32767:0:0[repeated_lower];` +
+        `[upper][repeated_lower]vstack=inputs=2[stacked],` +
+        `[stacked]subtitles=${adjustedCaptionsPath}:force_style='Alignment=6,MarginV=120,Fontsize=12,PrimaryColour=&H0000FF00&,OutlineColour=&H00FFFFFF&,Outline=1,Shadow=1,BorderStyle=1,Blur=5,BackColour=&H80000000&,Fontname=Roboto,Spacing=1.2'[stacked_with_subtitles],` +
         `[0:a]volume=1.0[upperaudio],` +
         `[upperaudio]anull[audio]`;
+
+      // const complexFilter =
+      //   `[0:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[upper],` +
+      //   `[1:v]scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960:(iw-1080)/2:(ih-960)/2[lower];` +
+      //   `[lower]loop=${repeatCount}:32767:0:0[repeated_lower];` +
+      //   `[upper][repeated_lower]vstack=inputs=2[stacked],` +
+      //   `${drawtextCommands}` +
+      //   `[stacked_with_drawtext],` +
+      //   `[0:a]volume=1.0[upperaudio],` +
+      //   `[upperaudio]anull[audio]`;
 
       const args = [
         '-i',
