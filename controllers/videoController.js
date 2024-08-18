@@ -98,40 +98,6 @@ export const processTwoVideos = async (req, res) => {
   }
 };
 
-export const previewVideo = (req, res) => {
-  const { filename } = req.params;
-  const filePath = path.resolve(
-    EXTERNAL_STORAGE_PATHS.brainRottingVideos,
-    filename
-  );
-
-  res.download(filePath, (err) => {
-    if (err) {
-      if (!res.headersSent) {
-        // Check if headers have already been sent
-        return res.status(500).json({ error: 'Error downloading the video' });
-      }
-    }
-  });
-};
-
-export const listVideos = async (req, res) => {
-  const directoryPath = path.resolve(EXTERNAL_STORAGE_PATHS.brainRottingVideos);
-
-  try {
-    const files = await fs.promises.readdir(directoryPath);
-    const videoFiles = files.filter((file) => path.extname(file) === '.mp4');
-
-    const videoList = videoFiles.map((file) => ({
-      name: file,
-      thumbnail: `http://localhost:3000/api/v1/video/preview/${file}`, // Use the preview endpoint as thumbnail
-    }));
-
-    res.json(videoList);
-  } catch (error) {
-    res.status(500).json({ error: 'Error listing the videos' });
-  }
-};
 
 export const previewVideo = (req, res) => {
   const { filename } = req.params;
@@ -168,34 +134,3 @@ export const listVideos = async (req, res) => {
   }
 };
 
-export const previewVideo = (req, res) => {
-  const { filename } = req.params;
-  const filePath = path.resolve('brainRottingVideos', filename);
-
-  res.download(filePath, (err) => {
-    if (err) {
-      if (!res.headersSent) { // Check if headers have already been sent
-        return res.status(500).json({ error: 'Error downloading the video' });
-      }
-    }
-  });
-};
-
-
-export const listVideos = async (req, res) => {
-  const directoryPath = path.resolve('brainRottingVideos');
-
-  try {
-    const files = await fs.promises.readdir(directoryPath);
-    const videoFiles = files.filter(file => path.extname(file) === '.mp4');
-    
-    const videoList = videoFiles.map(file => ({
-      name: file,
-      thumbnail: `http://localhost:3000/api/v1/video/preview/${file}` // Use the preview endpoint as thumbnail
-    }));
-
-    res.json(videoList);
-  } catch (error) {
-    res.status(500).json({ error: 'Error listing the videos' });
-  }
-};

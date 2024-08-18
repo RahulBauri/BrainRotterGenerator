@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     // Specify the file name
-    cb(null, Date.now() + path.extname(file.originalname));
+    cb(null, Date.now() + (path.extname(file.originalname) || '.mp4'));
   },
 });
 
