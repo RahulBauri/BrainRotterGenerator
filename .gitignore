@@ -1,3 +1,7 @@
 node_modules
 captions
 .env
+uploads/*
+outputs/*
+brainRottingVideos/*
+captions/*

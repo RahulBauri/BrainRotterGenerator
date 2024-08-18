@@ -98,6 +98,7 @@ export const processTwoVideos = async (req, res) => {
   }
 };
 
+
 export const previewVideo = (req, res) => {
   const { filename } = req.params;
   const filePath = path.resolve(
@@ -132,3 +133,4 @@ export const listVideos = async (req, res) => {
     res.status(500).json({ error: 'Error listing the videos' });
   }
 };
+
